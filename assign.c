@@ -1,9 +1,4 @@
-/*----------------------------------------------------------------------------
-	
-	Designers Guide to the Cortex-M Family
-	CMSIS RTOS Mutex Example
 
-*----------------------------------------------------------------------------*/
 #include "stm32f10x.h"
 #include "cmsis_os.h"
 #include "uart.h"
