@@ -6,26 +6,33 @@
 *----------------------------------------------------------------------------*/
 #include "stm32f10x.h"
 #include "cmsis_os.h"
-//#include "uart.h"
+#include "uart.h"
 
 void x_Thread1 (void const *argument);
 void x_Thread2 (void const *argument);
 void x_Thread3 (void const *argument);
 void x_Thread4 (void const *argument);
+void x_Thread5 (void const *argument);
 
 osThreadDef(x_Thread1, osPriorityNormal, 1, 0);
 osThreadDef(x_Thread2, osPriorityNormal, 1, 0);
 osThreadDef(x_Thread3, osPriorityNormal, 1, 0);
 osThreadDef(x_Thread4, osPriorityNormal, 1, 0);
+osThreadDef(x_Thread5, osPriorityNormal, 1, 0);
 
 osThreadId T_x1;
 osThreadId T_x2;
 osThreadId T_x3;
 osThreadId T_x4;
+osThreadId T_x5;
 
 osMessageQId Q_LED;
 osMessageQDef (Q_LED,0x16,unsigned char);
 osEvent  result;
+
+osMessageQId Q_LED2;
+osMessageQDef (Q_LED2,0x16,unsigned char);
+osEvent  result2;
 
 osMutexId x_mutex;
 osMutexDef(x_mutex);
@@ -82,7 +89,7 @@ void x_Thread2 (void const *argument)
 	for(; j<loopcount; j++){
 		data = get();
 		//SendChar(data);
-		osMessagePut(Q_LED,data,osWaitForever);             //Place a value in the message queue
+		osMessagePut(Q_LED2,data,osWaitForever);             //Place a value in the message queue
 	}
 }
 
@@ -104,7 +111,23 @@ void x_Thread4(void const *argument)
 		result = 	osMessageGet(Q_LED,osWaitForever);				//wait for a message to arrive
 		SendChar(result.value.v);
 	}
+	
 }
+
+
+
+
+	void x_Thread5(void const *argument)
+{
+	//cashier
+	for(;;){
+		result2 = 	osMessageGet(Q_LED2,osWaitForever);				//wait for a message to arrive
+		SendChar(result2.value.v);
+	}
+}
+
+
+
 
 int main (void) 
 {
@@ -115,18 +138,16 @@ int main (void)
 	x_mutex = osMutexCreate(osMutex(x_mutex));	
 	
 	Q_LED = osMessageCreate(osMessageQ(Q_LED),NULL);					//create the message queue
+	Q_LED2 = osMessageCreate(osMessageQ(Q_LED2),NULL);	
 	
 	T_x1 = osThreadCreate(osThread(x_Thread1), NULL);//producer
 	T_x2 = osThreadCreate(osThread(x_Thread2), NULL);//consumer
 	T_x3 = osThreadCreate(osThread(x_Thread3), NULL);//another consumer
 	T_x4 = osThreadCreate(osThread(x_Thread4), NULL);//casher
+	T_x5 = osThreadCreate(osThread(x_Thread5), NULL);//casher
 	
  
 	osKernelStart ();                         // start thread execution 
 }
 
-//new line of unwanted code
-//new line of unwanted code
-//new line of unwanted code
-//new user
-//new repo
+
