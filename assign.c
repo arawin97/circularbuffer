@@ -9,18 +9,21 @@
 #include "uart.h"
 
 void x_Thread1 (void const *argument);
+void x_Thread1b (void const *argument);
 void x_Thread2 (void const *argument);
 void x_Thread3 (void const *argument);
 void x_Thread4 (void const *argument);
 void x_Thread5 (void const *argument);
 
 osThreadDef(x_Thread1, osPriorityNormal, 1, 0);
+osThreadDef(x_Thread1b, osPriorityNormal,1, 0);
 osThreadDef(x_Thread2, osPriorityNormal, 1, 0);
 osThreadDef(x_Thread3, osPriorityNormal, 1, 0);
 osThreadDef(x_Thread4, osPriorityNormal, 1, 0);
 osThreadDef(x_Thread5, osPriorityNormal, 1, 0);
 
 osThreadId T_x1;
+osThreadId T_x1b;
 osThreadId T_x2;
 osThreadId T_x3;
 osThreadId T_x4;
@@ -41,16 +44,21 @@ osSemaphoreDef(item_semaphore);                       // Semaphore definition
 osSemaphoreId space_semaphore;                         // Semaphore ID
 osSemaphoreDef(space_semaphore);                       // Semaphore definition
 
+osSemaphoreId con;									
+osSemaphoreDef(con);
+
 long int x=0;
 long int i=0;
 long int j=0;
 long int k=0;
 
+
 const unsigned int N = 4;
 unsigned char buffer[N];
 unsigned int insertPtr = 0;
 unsigned int removePtr = 0;
-
+unsigned char item = 0x30;
+	
 void put(unsigned char an_item){
 	osSemaphoreWait(space_semaphore, osWaitForever);
 	osMutexWait(x_mutex, osWaitForever);
@@ -71,16 +79,40 @@ unsigned char get(){
 	return rr;
 }
 
-int loopcount = 20;
+int loopcount = 23;
 
 void x_Thread1 (void const *argument) 
 {
-	//producer
+	//producer1
 	unsigned char item = 0x30;
+    if (i <= 11)
+		{
+		osSemaphoreWait(con, osWaitForever);
+		}
 	for(; i<loopcount; i++){
+		
 		put(item++);
 	}
 }
+
+void x_Thread1b (void const *argument) 
+{
+	//producer2
+	unsigned char item = 0x30;
+
+	for(; i<loopcount; i++){	
+		
+		put(item++);
+		if (i >= 11)
+		{
+		osSemaphoreRelease(con);
+			osSemaphoreWait(con, osWaitForever);
+		}
+		
+		
+	 }
+}
+
 
 void x_Thread2 (void const *argument) 
 {
@@ -135,16 +167,18 @@ int main (void)
 	USART1_Init();
 	item_semaphore = osSemaphoreCreate(osSemaphore(item_semaphore), 0);
 	space_semaphore = osSemaphoreCreate(osSemaphore(space_semaphore), N);
+	con = osSemaphoreCreate(osSemaphore(con), 0);
 	x_mutex = osMutexCreate(osMutex(x_mutex));	
 	
 	Q_LED = osMessageCreate(osMessageQ(Q_LED),NULL);					//create the message queue
 	Q_LED2 = osMessageCreate(osMessageQ(Q_LED2),NULL);	
 	
-	T_x1 = osThreadCreate(osThread(x_Thread1), NULL);//producer
-	T_x2 = osThreadCreate(osThread(x_Thread2), NULL);//consumer
-	T_x3 = osThreadCreate(osThread(x_Thread3), NULL);//another consumer
-	T_x4 = osThreadCreate(osThread(x_Thread4), NULL);//casher
-	T_x5 = osThreadCreate(osThread(x_Thread5), NULL);//casher
+	T_x1 = osThreadCreate(osThread(x_Thread1), NULL);//producer1
+	T_x1b = osThreadCreate(osThread(x_Thread1b), NULL);//producer2
+	T_x2 = osThreadCreate(osThread(x_Thread2), NULL);//consumer1
+	T_x3 = osThreadCreate(osThread(x_Thread3), NULL);//consumer2
+	T_x4 = osThreadCreate(osThread(x_Thread4), NULL);//casher1
+	T_x5 = osThreadCreate(osThread(x_Thread5), NULL);//casher2
 	
  
 	osKernelStart ();                         // start thread execution 
