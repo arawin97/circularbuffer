@@ -147,4 +147,14 @@ int main (void)
 	osKernelStart ();                         // start thread execution 
 }
 
+<<<<<<< Updated upstream
 
+=======
+//new line of unwanted code
+//new line of unwanted code
+//new line of unwanted code
+//new user
+
+//newline of unwanted code
+//newline of unwanted code
+>>>>>>> Stashed changes
