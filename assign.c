@@ -1,9 +1,4 @@
-/*----------------------------------------------------------------------------
-	
-	Designers Guide to the Cortex-M Family
-	CMSIS RTOS Mutex Example
 
-*----------------------------------------------------------------------------*/
 #include "stm32f10x.h"
 #include "cmsis_os.h"
 #include "uart.h"
@@ -34,11 +29,14 @@ osMessageQDef (Q_LED,0x16,unsigned char);
 osEvent  result;
 
 osMessageQId Q_LED2;
-osMessageQDef (Q_LED2,0x16,unsigned char);
+osMessageQDef (Q_LED2,0x32,unsigned char);
 osEvent  result2;
 
 osMutexId x_mutex;
 osMutexDef(x_mutex);
+
+
+
 osSemaphoreId item_semaphore;                         // Semaphore ID
 osSemaphoreDef(item_semaphore);                       // Semaphore definition
 osSemaphoreId space_semaphore;                         // Semaphore ID
@@ -47,11 +45,16 @@ osSemaphoreDef(space_semaphore);                       // Semaphore definition
 osSemaphoreId con;									
 osSemaphoreDef(con);
 
+osSemaphoreId con2;									
+osSemaphoreDef(con2);
+
 
 long int x=0;
 long int i=0;
 long int j=0;
 long int k=0;
+long int mca = 1;
+long int mcb = 1;
 
 
 
@@ -87,13 +90,11 @@ void x_Thread1 (void const *argument)
 {
 	//producer1
 	unsigned char item = 0x30;
-    if (i <= 11)
-		{
-		osSemaphoreWait(con, osWaitForever);
-		}
+  osSemaphoreWait(con, osWaitForever);
 	for(; i<loopcount; i++){
-		
+	
 		put(item++);
+	
 	}
 }
 
@@ -101,17 +102,16 @@ void x_Thread1b (void const *argument)
 {
 	//producer2
 	unsigned char item = 0x30;
-
 	for(; i<loopcount; i++){	
 		
 		put(item++);
-		if (i >= 11)
+		
+		if (i>=11)
 		{
 		osSemaphoreRelease(con);
-			osSemaphoreWait(con, osWaitForever);
+		osSemaphoreWait(con, osWaitForever);
+
 		}
-		
-		
 	 }
 }
 
@@ -140,8 +140,8 @@ void x_Thread3 (void const *argument)
 
 void x_Thread4(void const *argument)
 {
-	//cashier
-	for(;;m++){
+	//cashier1
+	for(;;){
 		
 		result = 	osMessageGet(Q_LED,osWaitForever);				//wait for a message to arrive
 		SendChar(result.value.v);
@@ -153,12 +153,12 @@ void x_Thread4(void const *argument)
 
 	void x_Thread5(void const *argument)
 {
-	//cashier
-	for(;;m++){
+	//cashier2
+	for(;;){
 		
 		result2 = 	osMessageGet(Q_LED2,osWaitForever);				//wait for a message to arrive
 		SendChar(result2.value.v);
-	
+	   
 }
 	
 }
@@ -174,7 +174,8 @@ int main (void)
 	space_semaphore = osSemaphoreCreate(osSemaphore(space_semaphore), N);
 	con = osSemaphoreCreate(osSemaphore(con), 0);
 
-	x_mutex = osMutexCreate(osMutex(x_mutex));	
+	x_mutex = osMutexCreate(osMutex(x_mutex));
+  
 	
 	Q_LED = osMessageCreate(osMessageQ(Q_LED),NULL);					//create the message queue
 	Q_LED2 = osMessageCreate(osMessageQ(Q_LED2),NULL);	
