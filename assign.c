@@ -46,14 +46,13 @@ osSemaphoreDef(space_semaphore);                       // Semaphore definition
 
 osSemaphoreId con;									
 osSemaphoreDef(con);
-osSemaphoreId mes;									
-osSemaphoreDef(mes);
+
 
 long int x=0;
 long int i=0;
 long int j=0;
 long int k=0;
-long int m=0;
+
 
 
 const unsigned int N = 4;
@@ -143,18 +142,13 @@ void x_Thread4(void const *argument)
 {
 	//cashier
 	for(;;m++){
+		
 		result = 	osMessageGet(Q_LED,osWaitForever);				//wait for a message to arrive
 		SendChar(result.value.v);
-		if ( m==3 || m==7 || m==11 || m==15 || m==19 )
-		{
-			//osSemaphoreRelease(con);
-			osSemaphoreWait(con, osWaitForever);
-		}
+		
 	}
 	
 }
-
-
 
 
 	void x_Thread5(void const *argument)
@@ -162,15 +156,11 @@ void x_Thread4(void const *argument)
 	//cashier
 	for(;;m++){
 		
-		if ( m==3 || m==11 )
-		{
-			//osSemaphoreRelease(con);
-			osSemaphoreWait(con, osWaitForever);
-		}
-		
 		result2 = 	osMessageGet(Q_LED2,osWaitForever);				//wait for a message to arrive
 		SendChar(result2.value.v);
-	}
+	
+}
+	
 }
 
 
@@ -183,7 +173,7 @@ int main (void)
 	item_semaphore = osSemaphoreCreate(osSemaphore(item_semaphore), 0);
 	space_semaphore = osSemaphoreCreate(osSemaphore(space_semaphore), N);
 	con = osSemaphoreCreate(osSemaphore(con), 0);
-	mes = osSemaphoreCreate(osSemaphore(mes), 0);
+
 	x_mutex = osMutexCreate(osMutex(x_mutex));	
 	
 	Q_LED = osMessageCreate(osMessageQ(Q_LED),NULL);					//create the message queue
