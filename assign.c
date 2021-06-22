@@ -8,21 +8,22 @@ void x_Thread1b (void const *argument);
 void x_Thread2 (void const *argument);
 void x_Thread3 (void const *argument);
 void x_Thread4 (void const *argument);
-void x_Thread5 (void const *argument);
+
 
 osThreadDef(x_Thread1, osPriorityNormal, 1, 0);
 osThreadDef(x_Thread1b, osPriorityNormal,1, 0);
 osThreadDef(x_Thread2, osPriorityNormal, 1, 0);
 osThreadDef(x_Thread3, osPriorityNormal, 1, 0);
 osThreadDef(x_Thread4, osPriorityNormal, 1, 0);
-osThreadDef(x_Thread5, osPriorityNormal, 1, 0);
+
+
 
 osThreadId T_x1;
 osThreadId T_x1b;
 osThreadId T_x2;
 osThreadId T_x3;
 osThreadId T_x4;
-osThreadId T_x5;
+
 
 osMessageQId Q_LED;
 osMessageQDef (Q_LED,0x16,unsigned char);
@@ -53,8 +54,7 @@ long int x=0;
 long int i=0;
 long int j=0;
 long int k=0;
-long int mca = 1;
-long int mcb = 1;
+long int msg=0;
 
 
 
@@ -124,6 +124,7 @@ void x_Thread2 (void const *argument)
 		data = get();
 		//SendChar(data);
 		osMessagePut(Q_LED,data,osWaitForever);             //Place a value in the message queue
+		msg = 0;
 	}
 }
 
@@ -135,6 +136,7 @@ void x_Thread3 (void const *argument)
 		c2data = get();
 		//SendChar(c2data);
 		osMessagePut(Q_LED2,c2data,osWaitForever);             //Place a value in the message queue
+	  msg = 1;
 	}
 }
 
@@ -143,26 +145,18 @@ void x_Thread4(void const *argument)
 	//cashier1
 	for(;;){
 		
+		
 		result = 	osMessageGet(Q_LED,osWaitForever);				//wait for a message to arrive
 		SendChar(result.value.v);
+		
+		
+		
+		result2 = 	osMessageGet(Q_LED2,osWaitForever);				//wait for a message to arrive
+		SendChar(result2.value.v);
 		
 	}
 	
 }
-
-
-	void x_Thread5(void const *argument)
-{
-	//cashier2
-	for(;;){
-		
-		result2 = 	osMessageGet(Q_LED2,osWaitForever);				//wait for a message to arrive
-		SendChar(result2.value.v);
-	   
-}
-	
-}
-
 
 
 
@@ -185,7 +179,7 @@ int main (void)
 	T_x2 = osThreadCreate(osThread(x_Thread2), NULL);//consumer1
 	T_x3 = osThreadCreate(osThread(x_Thread3), NULL);//consumer2
 	T_x4 = osThreadCreate(osThread(x_Thread4), NULL);//casher1
-	T_x5 = osThreadCreate(osThread(x_Thread5), NULL);//casher2
+
 	
  
 	osKernelStart ();                         // start thread execution 
